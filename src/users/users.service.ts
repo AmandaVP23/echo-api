@@ -37,7 +37,9 @@ export class UsersService {
         }
 
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-        const verificationToken = uuidv4();
+        const verificationToken = this.generateVerificationToken(
+            createUserDto.email,
+        );
 
         const user = this.userRepository.create({
             name: createUserDto.name,
@@ -98,12 +100,14 @@ export class UsersService {
         }
     }
 
-    private async generateVerification(email: string) {
+    private generateVerificationToken(email: string) {
         const payload = { email };
         const secretKey = '123amanda987';
-        const expirationTime = '20s';
+        const expirationTime = '24h';
 
-        return jwt.sign(payload, secretKey, { expiresIn: expirationTime });
+        return jwt.sign(payload, secretKey, {
+            expiresIn: expirationTime,
+        });
     }
 
     private async sendVerificationEmail(
