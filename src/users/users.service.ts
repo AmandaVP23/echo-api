@@ -12,6 +12,8 @@ import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +33,10 @@ export class UsersService {
         this.webAppBaseUrl = configService.get<string>('WEB_APP_URL');
     }
 
-    async create(createUserDto: CreateUserDto) {
+    async create(
+        createUserDto: CreateUserDto,
+        avatar: Express.Multer.File | null,
+    ) {
         const existingUser = await this.userRepository.findOne({
             where: [
                 { email: createUserDto.email },
@@ -48,10 +53,19 @@ export class UsersService {
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
         const verificationToken = uuidv4();
 
+        let avatarPath: string | null = null;
+
         const expirationTime = new Date();
         expirationTime.setHours(
             expirationTime.getHours() + this.verificationTokenExpirationHours,
         );
+
+        if (avatar) {
+            const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(avatar.originalname)}`;
+            avatarPath = path.join('./storage/avatars', fileName);
+
+            fs.writeFileSync(avatarPath, avatar.buffer);
+        }
 
         const user = this.userRepository.create({
             name: createUserDto.name,
@@ -60,6 +74,7 @@ export class UsersService {
             password: hashedPassword,
             verificationToken,
             verificationTokenExpires: expirationTime,
+            avatar: avatarPath,
         });
 
         const savedUser = await this.userRepository.save(user);

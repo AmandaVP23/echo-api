@@ -20,7 +20,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
                 defaults: {
                     from: configService.get<string>('MAIL_FROM'),
                 },
-                preview: true,
+                // preview: true,
                 template: {
                     dir: join(__dirname, 'templates'),
                     adapter: new HandlebarsAdapter(),

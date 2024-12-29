@@ -26,4 +26,7 @@ export class User {
 
     @Column({ type: 'timestamp', nullable: true })
     verificationTokenExpires: Date;
+
+    @Column({ nullable: true })
+    avatar: string;
 }
