@@ -19,7 +19,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
                 signOptions: {
                     expiresIn: configService.get<string>(
                         'JWT_EXPIRATION',
-                        '1h',
+                        '15m',
                     ),
                 },
             }),

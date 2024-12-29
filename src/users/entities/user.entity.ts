@@ -34,4 +34,7 @@ export class User {
     @Column({ nullable: true })
     @Exclude()
     avatarPath: string;
+
+    @Column({ nullable: true })
+    avatarUrl: string;
 }

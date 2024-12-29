@@ -16,6 +16,6 @@ export const avatarUploadMulterOptions = {
         }
     },
     limits: {
-        fileSize: 2 * 1024 * 1024, // 2MB limit
+        fileSize: 5 * 1024 * 1024, // 5MB limit
     },
 };

@@ -1,6 +1,8 @@
 import {
     BadRequestException,
     ConflictException,
+    HttpException,
+    HttpStatus,
     Injectable,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -12,13 +14,15 @@ import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
 import * as path from 'path';
+import sharp from 'sharp';
 
 @Injectable()
 export class UsersService {
     private verificationTokenExpirationHours: number;
     private webAppBaseUrl: string;
+    private backendUrl: string;
+    private avatarUploadPath: string;
 
     constructor(
         @InjectRepository(User)
@@ -31,6 +35,8 @@ export class UsersService {
             24;
 
         this.webAppBaseUrl = configService.get<string>('WEB_APP_URL');
+        this.backendUrl = configService.get<string>('BACKEND_URL');
+        this.avatarUploadPath = configService.get<string>('AVATAR_UPLOAD_PATH');
     }
 
     async create(
@@ -54,6 +60,7 @@ export class UsersService {
         const verificationToken = uuidv4();
 
         let avatarPath: string | null = null;
+        let avatarUrl: string | null = null;
 
         const expirationTime = new Date();
         expirationTime.setHours(
@@ -62,9 +69,25 @@ export class UsersService {
 
         if (avatar) {
             const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(avatar.originalname)}`;
-            avatarPath = path.join('./storage/avatars', fileName);
+            avatarPath = path.resolve(this.avatarUploadPath, fileName);
+            avatarUrl = `${this.backendUrl}/avatars/${fileName}`;
+            try {
+                await sharp(avatar.buffer)
+                    .resize(300, null, {
+                        fit: 'inside',
+                        withoutEnlargement: true,
+                    })
+                    .toFile(avatarPath);
+                // resize width to 300, keeping ratio
+            } catch (e) {
+                console.log('Error processing the image:', e);
+                throw new HttpException(
+                    'Error processing image',
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                );
+            }
 
-            fs.writeFileSync(avatarPath, avatar.buffer);
+            console.log(avatar);
         }
 
         const user = this.userRepository.create({
@@ -75,6 +98,7 @@ export class UsersService {
             verificationToken,
             verificationTokenExpires: expirationTime,
             avatarPath: avatarPath,
+            avatarUrl,
         });
 
         const savedUser = await this.userRepository.save(user);
@@ -88,10 +112,6 @@ export class UsersService {
         return savedUser;
     }
 
-    findAll() {
-        return `This action returns all users`;
-    }
-
     async findOne(id: number) {
         return this.userRepository.findOne({
             where: { id },
@@ -100,10 +120,6 @@ export class UsersService {
 
     update(id: number, updateUserDto: UpdateUserDto) {
         return `This action updates a #${id} user`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} user`;
     }
 
     async validatePassword(plainPassword: string, hashedPassword) {
