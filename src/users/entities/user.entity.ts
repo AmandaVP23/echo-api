@@ -23,4 +23,7 @@ export class User {
 
     @Column({ nullable: true })
     verificationToken: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    verificationTokenExpires: Date;
 }

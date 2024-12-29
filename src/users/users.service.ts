@@ -37,9 +37,10 @@ export class UsersService {
         }
 
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-        const verificationToken = this.generateVerificationToken(
-            createUserDto.email,
-        );
+        const verificationToken = uuidv4();
+
+        const expirationTime = new Date();
+        expirationTime.setHours(expirationTime.getHours() + 24);
 
         const user = this.userRepository.create({
             name: createUserDto.name,
@@ -47,6 +48,7 @@ export class UsersService {
             username: createUserDto.username,
             password: hashedPassword,
             verificationToken,
+            verificationTokenExpires: expirationTime,
         });
 
         const savedUser = await this.userRepository.save(user);
@@ -77,37 +79,25 @@ export class UsersService {
     }
 
     async verifyAccount(token: string) {
-        try {
-            const secretKey = '123amanda987'; // todo - put in .env
-            jwt.verify(token, secretKey) as { email: string };
+        const user = await this.userRepository.findOne({
+            where: { verificationToken: token },
+        });
 
-            const user = await this.userRepository.findOne({
-                where: { verificationToken: token },
-            });
+        if (!user) {
+            throw new BadRequestException('Invalid token');
+        }
 
-            if (!user) {
-                return false;
-            }
-
-            user.verified = true;
-            user.verificationToken = null;
-
-            await this.userRepository.save(user);
-
-            return true;
-        } catch {
+        if (new Date() > user.verificationTokenExpires) {
             throw new BadRequestException('Token expired');
         }
-    }
 
-    private generateVerificationToken(email: string) {
-        const payload = { email };
-        const secretKey = '123amanda987';
-        const expirationTime = '24h';
-
-        return jwt.sign(payload, secretKey, {
-            expiresIn: expirationTime,
+        await this.userRepository.update(user.id, {
+            verificationToken: null,
+            verificationTokenExpires: null,
+            verified: true,
         });
+
+        return true;
     }
 
     private async sendVerificationEmail(

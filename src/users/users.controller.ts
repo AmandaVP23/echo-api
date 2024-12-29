@@ -45,11 +45,7 @@ export class UsersController {
 
     @Post('verify/:token')
     async verifyUser(@Param('token') token: string) {
-        const isVerified = await this.usersService.verifyAccount(token);
-
-        if (!isVerified) {
-            throw new BadRequestException('Invalid or expired token');
-        }
+        await this.usersService.verifyAccount(token);
 
         return 'Account successfully verified!';
     }
