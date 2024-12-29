@@ -13,11 +13,14 @@ async function bootstrap() {
         .setTitle('Echo Chat - API Documentation')
         .setDescription('API Documentation')
         .setVersion('1.0')
+        .addBearerAuth()
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
 
-    SwaggerModule.setup('docs', app, document);
+    SwaggerModule.setup('docs', app, document, {
+        customSiteTitle: 'Echo API Docs',
+    });
 
     await app.listen(PORT);
     console.log('*****************************************************');

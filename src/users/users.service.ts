@@ -104,6 +104,16 @@ export class UsersService {
         return `This action removes a #${id} user`;
     }
 
+    async validatePassword(plainPassword: string, hashedPassword) {
+        return bcrypt.compare(plainPassword, hashedPassword);
+    }
+
+    async findByEmailOrUsername(identifier: string): Promise<User | undefined> {
+        return this.userRepository.findOne({
+            where: [{ email: identifier }, { username: identifier }],
+        });
+    }
+
     async verifyAccount(token: string) {
         const user = await this.userRepository.findOne({
             where: { verificationToken: token },

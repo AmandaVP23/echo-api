@@ -5,6 +5,8 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthenticationModule } from './authentication/authentication.module';
+import { ProtectedRouteModule } from './protected-route/protected-route.module';
 
 @Module({
     imports: [
@@ -21,6 +23,8 @@ import { ConfigModule } from '@nestjs/config';
         ConfigModule.forRoot({ isGlobal: true }),
         UsersModule,
         MailModule,
+        AuthenticationModule,
+        ProtectedRouteModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -6,16 +6,18 @@ import {
     Patch,
     Param,
     Delete,
-    BadRequestException,
     UseInterceptors,
     UploadedFile,
     ClassSerializerInterceptor,
+    UseGuards,
+    Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/authentication/jwt-auth.guard';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -35,6 +37,15 @@ export class UsersController {
     @Get()
     findAll() {
         return this.usersService.findAll();
+    }
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Request logged user information' })
+    getLoggedUserInformation(@Request() req) {
+        console.log(req.user);
+        return 'hello!';
     }
 
     @Get(':id')
