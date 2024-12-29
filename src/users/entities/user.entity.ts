@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 @Unique(['email', 'username'])
@@ -16,17 +17,21 @@ export class User {
     email: string;
 
     @Column()
+    @Exclude()
     password: string;
 
     @Column({ default: false })
     verified: boolean;
 
     @Column({ nullable: true })
+    @Exclude()
     verificationToken: string;
 
     @Column({ type: 'timestamp', nullable: true })
+    @Exclude()
     verificationTokenExpires: Date;
 
     @Column({ nullable: true })
-    avatar: string;
+    @Exclude()
+    avatarPath: string;
 }

@@ -74,7 +74,7 @@ export class UsersService {
             password: hashedPassword,
             verificationToken,
             verificationTokenExpires: expirationTime,
-            avatar: avatarPath,
+            avatarPath: avatarPath,
         });
 
         const savedUser = await this.userRepository.save(user);
