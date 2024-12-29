@@ -9,18 +9,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { WEB_APP_URL } from 'src/main';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
-import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
+    private verificationTokenExpirationHours: number;
+    private webAppBaseUrl: string;
+
     constructor(
         @InjectRepository(User)
-        private userRepository: Repository<User>,
+        private readonly userRepository: Repository<User>,
         private readonly mailService: MailService,
-    ) {}
+        private readonly configService: ConfigService,
+    ) {
+        this.verificationTokenExpirationHours =
+            configService.get<number>('VERIFICATION_TOKEN_DURATION_HOURS') ||
+            24;
+
+        this.webAppBaseUrl = configService.get<string>('WEB_APP_URL');
+    }
 
     async create(createUserDto: CreateUserDto) {
         const existingUser = await this.userRepository.findOne({
@@ -40,7 +49,9 @@ export class UsersService {
         const verificationToken = uuidv4();
 
         const expirationTime = new Date();
-        expirationTime.setHours(expirationTime.getHours() + 24);
+        expirationTime.setHours(
+            expirationTime.getHours() + this.verificationTokenExpirationHours,
+        );
 
         const user = this.userRepository.create({
             name: createUserDto.name,
@@ -107,7 +118,7 @@ export class UsersService {
     ) {
         console.log(`Send verification email to ${email} with token: ${token}`);
 
-        const verificationUrl = `${WEB_APP_URL}/verify-account/${token}`;
+        const verificationUrl = `${this.webAppBaseUrl}/verify-account/${token}`;
 
         await this.mailService.sendVerificationEmail(
             email,

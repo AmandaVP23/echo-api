@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { MailModule } from './mail/mail.module';
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: true, // should be false in production
         }),
+        ConfigModule.forRoot({ isGlobal: true }),
         UsersModule,
         MailModule,
     ],

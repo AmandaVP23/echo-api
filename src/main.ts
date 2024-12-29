@@ -3,11 +3,10 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 // email validation = class validator
-// env variables - .env and nestjs/config
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
-export const WEB_APP_URL = 'http://localhost:3000';
+// export const WEB_APP_URL = process.env.WEB_APP_URL;
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
