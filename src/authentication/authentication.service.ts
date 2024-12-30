@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ResetPasswordTokenService } from 'src/reset-password-token/reset-password-token.service';
 import { MailService } from 'src/mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { TokenBlacklistService } from 'src/authentication/token-blacklist.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -24,6 +25,7 @@ export class AuthenticationService {
         private readonly usersService: UsersService,
         private readonly tokenService: ResetPasswordTokenService,
         private readonly mailService: MailService,
+        private readonly tokenBlacklistService: TokenBlacklistService,
     ) {
         this.jwtRefreshSecret = configService.get<string>('JWT_REFRESH_SECRET');
         this.jwtRefreshExpiration = configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION', '7d');
@@ -82,6 +84,24 @@ export class AuthenticationService {
         await this.tokenService.deleteToken(existingToken.token);
     }
 
+    async logout(accessToken: string, refreshToken: string) {
+        const isAccessTokenBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(accessToken);
+        const isRefreshTokenBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(refreshToken);
+
+        if (!isAccessTokenBlacklisted) {
+            console.log(accessToken);
+            const decodedAccessToken = this.jwtService.decode(accessToken);
+            console.log(decodedAccessToken);
+            this.tokenBlacklistService.addTokenToBlacklist(accessToken, new Date(decodedAccessToken.exp * 1000));
+        }
+
+        if (!isRefreshTokenBlacklisted) {
+            const decodedRefreshToken = this.jwtService.decode(refreshToken);
+            console.log(decodedRefreshToken);
+            this.tokenBlacklistService.addTokenToBlacklist(accessToken, new Date(decodedRefreshToken.exp * 1000));
+        }
+    }
+
     async getUserByRefreshToken(refreshToken: string): Promise<User | null> {
         try {
             const decoded = this.jwtService.verify(refreshToken, {
@@ -95,6 +115,11 @@ export class AuthenticationService {
     }
 
     async refreshTokens(refreshToken: string) {
+        const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(refreshToken);
+        if (isBlacklisted) {
+            throw new UnauthorizedException();
+        }
+
         const user = await this.getUserByRefreshToken(refreshToken);
 
         if (!user) {

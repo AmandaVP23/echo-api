@@ -9,9 +9,13 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ResetPasswordTokenModule } from 'src/reset-password-token/reset-password-token.module';
 import { MailModule } from 'src/mail/mail.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TokenBlacklist } from './entities/token-blacklist.entity';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Module({
     imports: [
+        TypeOrmModule.forFeature([TokenBlacklist]),
         PassportModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
@@ -27,8 +31,8 @@ import { MailModule } from 'src/mail/mail.module';
         ResetPasswordTokenModule,
         MailModule,
     ],
-    providers: [AuthenticationService, JwtStrategy, JwtAuthGuard],
+    providers: [AuthenticationService, JwtStrategy, JwtAuthGuard, TokenBlacklistService],
     controllers: [AuthenticationController],
-    exports: [JwtAuthGuard],
+    exports: [JwtAuthGuard, TokenBlacklistService],
 })
 export class AuthenticationModule {}

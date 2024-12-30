@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 // email validation = class validator
+// todo - only verified users can login
+// /me returning wrong user
 
 const PORT = process.env.PORT || 8080;
 

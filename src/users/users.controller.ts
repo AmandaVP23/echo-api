@@ -26,10 +26,7 @@ export class UsersController {
     @Post('registration')
     @UseInterceptors(FileInterceptor('avatar'))
     @ApiOperation({ summary: 'Create a new user account' })
-    create(
-        @Body() createUserDto: CreateUserDto,
-        @UploadedFile() avatar: Express.Multer.File | null,
-    ) {
+    create(@Body() createUserDto: CreateUserDto, @UploadedFile() avatar: Express.Multer.File | null) {
         return this.usersService.create(createUserDto, avatar);
     }
 
