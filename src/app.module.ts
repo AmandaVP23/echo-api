@@ -8,6 +8,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { ProtectedRouteModule } from './protected-route/protected-route.module';
 import { ResetPasswordTokenModule } from './reset-password-token/reset-password-token.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
     imports: [
@@ -27,6 +29,9 @@ import { ResetPasswordTokenModule } from './reset-password-token/reset-password-
         AuthenticationModule,
         ProtectedRouteModule,
         ResetPasswordTokenModule,
+        ServeStaticModule.forRoot({
+            rootPath: join(__dirname, 'public'),
+        }),
     ],
     controllers: [AppController],
     providers: [AppService],
