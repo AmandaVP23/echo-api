@@ -7,6 +7,7 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { ProtectedRouteModule } from './protected-route/protected-route.module';
+import { ResetPasswordTokenModule } from './reset-password-token/reset-password-token.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { ProtectedRouteModule } from './protected-route/protected-route.module';
         MailModule,
         AuthenticationModule,
         ProtectedRouteModule,
+        ResetPasswordTokenModule,
     ],
     controllers: [AppController],
     providers: [AppService],

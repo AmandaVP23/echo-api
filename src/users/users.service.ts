@@ -1,10 +1,4 @@
-import {
-    BadRequestException,
-    ConflictException,
-    HttpException,
-    HttpStatus,
-    Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,42 +24,29 @@ export class UsersService {
         private readonly mailService: MailService,
         private readonly configService: ConfigService,
     ) {
-        this.verificationTokenExpirationHours =
-            configService.get<number>('VERIFICATION_TOKEN_DURATION_HOURS') ||
-            24;
-
+        this.verificationTokenExpirationHours = configService.get<number>('VERIFICATION_TOKEN_DURATION_HOURS') || 24;
         this.webAppBaseUrl = configService.get<string>('WEB_APP_URL');
         this.backendUrl = configService.get<string>('BACKEND_URL');
         this.avatarUploadPath = configService.get<string>('AVATAR_UPLOAD_PATH');
     }
 
-    async create(
-        createUserDto: CreateUserDto,
-        avatar: Express.Multer.File | null,
-    ) {
+    async create(createUserDto: CreateUserDto, avatar: Express.Multer.File | null) {
         const existingUser = await this.userRepository.findOne({
-            where: [
-                { email: createUserDto.email },
-                { username: createUserDto.username },
-            ],
+            where: [{ email: createUserDto.email }, { username: createUserDto.username }],
         });
 
         if (existingUser) {
-            throw new ConflictException(
-                'Conflict - duplicated email or username',
-            );
+            throw new ConflictException('Conflict - duplicated email or username');
         }
 
-        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+        const hashedPassword = await this.getHashedPassword(createUserDto.password);
         const verificationToken = uuidv4();
 
         let avatarPath: string | null = null;
         let avatarUrl: string | null = null;
 
         const expirationTime = new Date();
-        expirationTime.setHours(
-            expirationTime.getHours() + this.verificationTokenExpirationHours,
-        );
+        expirationTime.setHours(expirationTime.getHours() + this.verificationTokenExpirationHours);
 
         if (avatar) {
             const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(avatar.originalname)}`;
@@ -81,10 +62,7 @@ export class UsersService {
                 // resize width to 300, keeping ratio
             } catch (e) {
                 console.log('Error processing the image:', e);
-                throw new HttpException(
-                    'Error processing image',
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                );
+                throw new HttpException('Error processing image', HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
             console.log(avatar);
@@ -103,11 +81,7 @@ export class UsersService {
 
         const savedUser = await this.userRepository.save(user);
 
-        await this.sendVerificationEmail(
-            createUserDto.name,
-            createUserDto.email,
-            verificationToken,
-        );
+        await this.sendVerificationEmail(createUserDto.name, createUserDto.email, verificationToken);
 
         return savedUser;
     }
@@ -118,8 +92,19 @@ export class UsersService {
         });
     }
 
-    update(id: number, updateUserDto: UpdateUserDto) {
-        return `This action updates a #${id} user`;
+    async update(userId: number, updateData: Partial<User>): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const updatedUser = this.userRepository.merge(user, updateData);
+        return this.userRepository.save(updatedUser);
+    }
+
+    async getHashedPassword(password: string) {
+        return bcrypt.hash(password, 10);
     }
 
     async validatePassword(plainPassword: string, hashedPassword) {
@@ -137,11 +122,7 @@ export class UsersService {
             where: { verificationToken: token },
         });
 
-        if (!user) {
-            throw new BadRequestException('Invalid token');
-        }
-
-        if (new Date() > user.verificationTokenExpires) {
+        if (!user || new Date() > user.verificationTokenExpires) {
             throw new BadRequestException('Token expired');
         }
 
@@ -154,23 +135,15 @@ export class UsersService {
         return true;
     }
 
-    private async sendVerificationEmail(
-        name: string,
-        email: string,
-        token: string,
-    ) {
+    private async sendVerificationEmail(name: string, email: string, token: string) {
         console.log(`Send verification email to ${email} with token: ${token}`);
 
         const verificationUrl = `${this.webAppBaseUrl}/verify-account/${token}`;
 
-        await this.mailService.sendVerificationEmail(
-            email,
-            'Verify Your Account',
-            {
-                name,
-                verificationUrl,
-            },
-        );
+        await this.mailService.sendEmail(email, 'Verify Your Account', 'verify-account', {
+            name,
+            verificationUrl,
+        });
 
         console.log(`Verification email sent to ${email}`);
     }

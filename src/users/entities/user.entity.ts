@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { PasswordResetToken } from 'src/reset-password-token/entities/password-reset-token.entity';
 
 @Entity()
 @Unique(['email', 'username'])
@@ -37,4 +38,13 @@ export class User {
 
     @Column({ nullable: true })
     avatarUrl: string;
+
+    @OneToOne(() => PasswordResetToken, (token) => token.user)
+    passwordResetToken: PasswordResetToken;
+
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamp' })
+    updatedAt: Date;
 }

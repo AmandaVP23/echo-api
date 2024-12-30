@@ -5,15 +5,11 @@ import { Injectable } from '@nestjs/common';
 export class MailService {
     constructor(private readonly mailerService: MailerService) {}
 
-    async sendVerificationEmail(
-        to: string,
-        subject: string,
-        context: Record<string, string>,
-    ) {
+    async sendEmail(to: string, subject: string, template: string, context: Record<string, string>) {
         await this.mailerService.sendMail({
             to,
             subject,
-            template: 'verify-account',
+            template,
             context,
         });
     }
