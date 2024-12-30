@@ -1,6 +1,24 @@
-{{> font-styles }}
+<html>
+    <head>
+        {{> base-styles }}
+        <style>
+            .primary-btn {
+                margin-top: 40px;
+            }
+        </style>>
+    </head>
+    <body>
+        <table class="content-wrapper">
+            <tr>
+                <td align="center">
+                    <img class="logo" src="{{backendUrl}}/images/logo-with-drawing.png" alt="Echo - Logo" />
+                    <h2>Verify your e-mail address.</h2>
 
-<p>Hello {{name}},</p>
-<p>Thank you for registering. Please verify your account by clicking the link below:</p>
-<p><a href="{{verificationUrl}}">Verify Account</a></p>
-<p>If you did not register, please ignore this email.</p>
+                    <p>To complete your registration, please verify your email address.</p>
+                    
+                    <a class="primary-btn" href="{{resetLink}}">Verify E-mail</a>
+                </td>
+            </tr>
+        </div>
+    </body>
+</html> 
