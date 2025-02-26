@@ -18,8 +18,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             throw new UnauthorizedException();
         }
 
-        console.log(this.tokenBlacklistService);
-
         const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(accessToken);
 
         if (isBlacklisted) {

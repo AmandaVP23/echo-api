@@ -1,9 +1,10 @@
-import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { PasswordResetToken } from 'src/reset-password-token/entities/password-reset-token.entity';
 
 @Entity()
-@Unique(['email', 'username'])
+// @Unique(['email', 'username'])
+@Index(['email', 'username'], { unique: true })
 export class User {
     @PrimaryGeneratedColumn()
     id: number;

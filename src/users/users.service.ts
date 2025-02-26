@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -133,6 +133,19 @@ export class UsersService {
         });
 
         return true;
+    }
+
+    async searchUser(query: string, loggedUserEmail: string): Promise<User | null> {
+        const userFound = await this.userRepository.createQueryBuilder('user')
+            .where('(user.username = :query OR user.email = :query)', { query })
+            .andWhere('user.email != :loggedUserEmail', { loggedUserEmail })
+            .getOne();
+
+        if (!userFound) {
+            throw new NotFoundException();
+        }
+
+        return userFound;
     }
 
     private async sendVerificationEmail(name: string, email: string, token: string) {

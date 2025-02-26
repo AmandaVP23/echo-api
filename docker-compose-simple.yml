@@ -1,0 +1,43 @@
+version: '3.8'
+name: echo-chat-dev
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-echo-chat
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: echo-chat
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  mailcatcher:
+    image: sj26/mailcatcher
+    container_name: mailcatcher
+    restart: always
+    ports:
+      - "1025:1025"  # SMTP server
+      - "1080:1080"  # Web UI
+
+  frontend:
+    build:
+      context: ${WEB_APP_PATH}
+      dockerfile: Dockerfile
+    container_name: echo_chat-web
+    restart: always
+    ports:
+      - "3000:3000"
+
+volumes:
+  mariadb_data:
