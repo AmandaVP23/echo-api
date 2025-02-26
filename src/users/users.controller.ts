@@ -43,7 +43,7 @@ export class UsersController {
         return this.usersService.update(+id, updateUserDto);
     }
 
-    @Post('verify/:token')
+    @Get('verify/:token')
     async verifyUser(@Param('token') token: string) {
         await this.usersService.verifyAccount(token);
 
