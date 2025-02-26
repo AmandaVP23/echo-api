@@ -6,7 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 // todo - only verified users can login
 // /me returning wrong user
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.BACKEND_PORT || 8080;
 const WEB_APP_URL = process.env.WEB_APP_URL;
 
 async function bootstrap() {
