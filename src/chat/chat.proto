@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package chat;
+
+// The chat service definition.
+service ChatService {
+    // Send a message, requiring recipient approval for the first message
+    rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+    
+    // Accept a chat request
+    rpc AcceptMessage (AcceptMessageRequest) returns (AcceptMessageResponse);
+    
+    // Stream messages
+    rpc ChatStream (ChatStreamRequest) returns (stream ChatMessage);
+}
+
+// Request to send a message
+message SendMessageRequest {
+    string senderId = 1;
+    string recipientId = 2;
+    string content = 3;
+}
+
+// Response for sending a message
+message SendMessageResponse {
+    string status = 1;
+    string requestId = 2; // If the recipient needs to accept first
+}
+
+// Request to accept a chat request
+message AcceptMessageRequest {
+    string requestId = 1;
+}
+
+// Response after accepting a request
+message AcceptMessageResponse {
+    string status = 1;
+}
+
+// Streaming request
+message ChatStreamRequest {
+    string userId = 1;
+}
+
+// Streaming response
+message ChatMessage {
+    string senderId = 1;
+    string recipientId = 2;
+    string content = 3;
+}

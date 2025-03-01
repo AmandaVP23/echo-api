@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
+import { ChatService } from './chat/chat.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,6 +11,8 @@ import { ProtectedRouteModule } from './protected-route/protected-route.module';
 import { ResetPasswordTokenModule } from './reset-password-token/reset-password-token.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { Transport } from '@nestjs/microservices';
+import { ChatModule } from './chat/chat.module';
 
 
 @Module({
@@ -34,11 +37,26 @@ import { join } from 'path';
         AuthenticationModule,
         ProtectedRouteModule,
         ResetPasswordTokenModule,
+        ChatModule,
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, 'public'),
         }),
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        // ChatService,
+        // {
+        //     provide: 'CHAT_PACKAGE',
+        //     useFactory: () => ({
+        //       transport: Transport.GRPC,
+        //       options: {
+        //         package: 'chat',
+        //         protoPath: 'chat/chat.proto', // Adjust the path to your .proto file
+        //         url: 'localhost:5000', // Ensure this is the correct gRPC URL
+        //       },
+        //     }),
+        // },
+    ],
 })
 export class AppModule {}

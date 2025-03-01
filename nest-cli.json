@@ -4,7 +4,7 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": ["**/*.hbs", "/public/**/*"],
+    "assets": ["**/*.hbs", "/public/**/*", "**/*.proto"],
     "watchAssets": true
   }
 }
