@@ -48,6 +48,7 @@ services:
       MAIL_HOST: mailcatcher
       MAIL_PORT: 1025
       BACKEND_PORT: ${BACKEND_PORT}
+      AVATAR_UPLOAD_PATH: /app/uploads
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
       

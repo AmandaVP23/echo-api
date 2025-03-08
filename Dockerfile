@@ -11,6 +11,8 @@ RUN yarn install --frozen-lockfile
 # Copy the entire project
 COPY . .
 
+RUN mkdir -p uploads
+
 # Build the NestJS app
 RUN yarn build
 
